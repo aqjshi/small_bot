@@ -1,115 +1,116 @@
+import pyautogui
+import pytesseract
+from PIL import Image
+import cv2
+import numpy as np
 import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+import os
 
-import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
+# Path to Tesseract executable (modify this path based on your setup)
+pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
 
-# Initialize the Chrome driver
-def init_driver(chrome_service_path='/opt/homebrew/bin/chromedriver'):
-    chrome_service = Service(chrome_service_path)
-    return webdriver.Chrome(service=chrome_service)
+# Take a screenshot
+def take_screenshot():
+    screenshot = pyautogui.screenshot()
+    screenshot.save("screenshot.png")
+    #save to file
+    return screenshot
 
-# Function to open the Google Snake game
-def open_snake_game(driver):
-    driver.get("https://www.google.com/search?q=snake")
-    time.sleep(2)  # Let the page load
+def preprocess_image(screenshot_path):
+    image = cv2.imread(screenshot_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)  # Increase contrast
+    return Image.fromarray(binary)
 
-# Function to simulate mouse click at given X and Y coordinates
-def click_at_position(driver, x, y):
-    try:
-        driver.execute_script(f"""
-            var element = document.elementFromPoint({x}, {y});
-            if (element) {{
-                var event = new MouseEvent('click', {{
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'clientX': {x},
-                    'clientY': {y}
-                }});
-                element.dispatchEvent(event);
-            }} else {{
-                console.log('No element found at the given coordinates');
-            }}
-        """)
-        print(f"Mouse click simulated at X: {x}, Y: {y}")
-        return True
-    except Exception as e:
-        print(f"Error simulating mouse click at X: {x}, Y: {y}: {e}")
-        return False
 
-# Function to dynamically find the "Play" button by aria-label and adjust its constraints
-def find_and_click_play_button(driver):
-    try:
-        # Locate the 'Play' button by its aria-label
-        play_button = driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]')
-        location = play_button.location
-        size = play_button.size
-
-        # Dynamically set constraints based on the button's position and size
-        x_min = location['x']
-        y_min = location['y']
-        x_max = x_min + size['width']
-        y_max = y_min + size['height']
-
-        print(f"Dynamic Play button found at X={x_min}, Y={y_min}, Width={size['width']}, Height={size['height']}")
-
-        # Click the Play button within the dynamically calculated constraints
-        click_at_position(driver, x_min + 10, y_min + 10)
-        return True
-    except Exception as e:
-        print(f"Error finding or clicking the 'Play' button: {e}")
-        return False
-
-def play_game(game_area):
-    while True:
-        game_area.send_keys(Keys.ARROW_RIGHT)
-        time.sleep(.5)
-        game_area.send_keys(Keys.ARROW_DOWN)
-        time.sleep(.5)
-        game_area.send_keys(Keys.ARROW_LEFT)
-        time.sleep(.5)
-        game_area.send_keys(Keys.ARROW_UP)
-        time.sleep(.5)
-
-# Main function to run the full workflow
-def main():
-    driver = init_driver()
+# Function to use OCR to find keyword
+def find_keyword_in_screenshot(keyword, screenshot_path):
+    image = preprocess_image(screenshot_path)  # Preprocess the image
+    data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
     
-    try:
-        # Open the game
-        open_snake_game(driver)
+    # Loop over each word found by pytesseract
+    for i, word in enumerate(data['text']):
+        if word.lower() == keyword.lower():
+            # Get the bounding box coordinates of the word
+            x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
+            return (x, y, w, h)
+    
+    return None
 
-        # Click the initial play button (coordinates may need to be adapted)
-        if click_at_position(driver, 261, 492):
-            print("Initial 'Play' button clicked. Waiting for dialog 'Play' button...")
-            time.sleep(2)
+# Function to click on the found keyword
+def click_on_word(x, y, w, h):
+    # Calculate the center of the word
+    click_x = x + w / 2 
+    click_y = y + h / 2
+    
+    # Move the mouse to the word's position and click
+    pyautogui.moveTo(click_x, click_y)
+    
+    # double click
+    pyautogui.doubleClick()
 
-            # Dynamically find and click the dialog "Play" button
-            if find_and_click_play_button(driver):
-                print("Dialog 'Play' button clicked. Starting the game...")
+    #OPENING FILES IN MAC
+#     pyautogui.click(button='right')
+#     time.sleep(.5)
+#     # Mouse clicked at X: 1991.65625, Y: 1085.2265625
+#     # Mouse clicked at X: 2026.2890625, Y: 925.625
+# # 34.6328125, -159.6015625
+#     pyautogui.moveTo(click_x + 35, click_y - 165)
+#     #left click
+#     pyautogui.click()
+#     time.sleep(.5)
 
-                # Locate the game area (usually the body or canvas element)
-                game_area = driver.find_element(By.TAG_NAME, 'body')
-                game_area.click()
+# Main function
+def main():
+    keyword = "PLAY"  # Change to the word you are looking for
 
-                # Start playing the game (this can be extended with actual gameplay logic)
-                play_game(game_area)
-            else:
-                print("Failed to find or click dialog 'Play' button.")
-        else:
-            print("Initial 'Play' button not clicked. Cannot proceed.")
+    # Step 1: Take a screenshot
+    screenshot = take_screenshot()
 
-    finally:
-        # Close the browser after interaction
-        driver.quit()
+    # Step 2: Find the keyword in the screenshot
+    result = find_keyword_in_screenshot(keyword, "screenshot.png")
+    
+    #delete the screenshot
+    os.remove("screenshot.png")
+    if result:
+        x, y, w, h = result
+        print(f"Found at position (X: {x}, Y: {y}) with size (W: {w}, H: {h})")
+        
+        # Step 3: Click on the keyword
+        click_on_word(x, y, w, h)
+    else:
+        print(f"Not found on the screen.")
+
+    time.sleep(1)
+    screenshot2 = take_screenshot()
+    screenshot2.save("screenshot2.png")  # Save with a different name
+    result2 = find_keyword_in_screenshot(keyword, "screenshot2.png")
+
+
+    # Step 2: Find the keyword in the screenshot
+    result2 = find_keyword_in_screenshot(keyword, "screenshot2.png")
+    
+    while( not result2):
+        result2 = find_keyword_in_screenshot(keyword, "screenshot2.png")
+
+    if result2:
+        x, y, w, h = result2
+        print(f"Found at position (X: {x}, Y: {y}) with size (W: {w}, H: {h})")
+        
+        # Step 3: Click on the keyword
+        click_on_word(x, y, w, h)
+
+    else:
+        print(f"Not found on the screen.")
+
+    pyautogui.press('right')
+    time.sleep(0.5)
+    pyautogui.press('down')
+    time.sleep(0.5)
+    pyautogui.press('left')
+    time.sleep(0.5)
+    pyautogui.press('up')
+    time.sleep(0.5)
 
 if __name__ == "__main__":
     main()
