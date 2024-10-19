@@ -8,32 +8,39 @@ from pynput.keyboard import Key
 mouse_log_file = "log.txt"
 key_log_file = "log.txt"
 scroll_log_file = "log.txt"
-
+'''
+MP = Mouse Press
+MR = Mouse Release
+S = Scroll
+KP = Key Press
+KR = Key Release
+SKP = Special Key Press
+'''
 # Function to log mouse click positions
 def on_click(x, y, button, pressed):
     with open(mouse_log_file, "a") as f:
         if pressed:
-            f.write(f"Mouse clicked at X: {x}, Y: {y}, Button: {button}\n")
+            f.write(f"MP {x} {y} {button}\n")
         else:
-            f.write(f"Mouse released at X: {x}, Y: {y}, Button: {button}\n")
+            f.write(f"MR {x} {y} {button}\n")
 
 # Function to log mouse scroll events
 def on_scroll(x, y, dx, dy):
     with open(scroll_log_file, "a") as f:
-        f.write(f"Scrolled at X: {x}, Y: {y}, Scroll DX: {dx}, Scroll DY: {dy}\n")
+        f.write(f"S {x} {y} {dx} {dy}\n")
 
 # Function to log keyboard key press events
 def on_press(key):
-    with open(key_log_file, "a") as f:
+    with open(key_log_file, "a") as asf:
         try:
-            f.write(f"Key pressed: {key.char}\n")
+            f.write(f"KP {key.char}\n")
         except AttributeError:
-            f.write(f"Special key pressed: {key}\n")
+            f.write(f"SKP {key}\n")
 
 # Function to log keyboard key release events
 def on_release(key):
     with open(key_log_file, "a") as f:
-        f.write(f"Key released: {key}\n")
+        f.write(f"KR: {key}\n")
 
 # Set up the listeners
 def start_listeners():
