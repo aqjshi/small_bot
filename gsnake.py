@@ -24,7 +24,6 @@ def preprocess_image(screenshot_path):
 
 
 # Function to use OCR to find keyword
-# Function to use OCR to find keyword and log detected words
 def find_keyword_in_screenshot(keyword, screenshot_path):
     image = preprocess_image(screenshot_path)  # Preprocess the image
     # data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
@@ -34,7 +33,7 @@ def find_keyword_in_screenshot(keyword, screenshot_path):
     data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT, config=custom_config)
 
 
-    # Print all detected words for debugging purposes
+    # debug
     # print("Detected words:", data['text'])
 
     # Loop over each word found by pytesseract
@@ -59,6 +58,7 @@ def click_on_word(x, y, w, h):
     
     # double click
     pyautogui.doubleClick()
+
 
 def open_file(keyword="KEYWORD"):
     screenshot0 = take_screenshot()
