@@ -1,3 +1,5 @@
+Shi, Q. (2024). Automated Task Execution with CNN and NLP. GitHub. [https://github.com/username/repository](https://github.com/aqjshi/small_bot)
+
 # Automated Task Execution with CNN and NLP
 
 ## Project Overview
@@ -11,17 +13,17 @@ The core principle behind this project is simple: **If you are able to understan
 The system uses:  
 
 - **CNN** for visual similarity analysis (based on screenshots of user actions).
-- 
+  
 - **NLP** for text similarity (using OCR to extract and compare text from images).
-- 
+  
 
 ## Project Files  
 
 
 - **`generate_dataset.py`**: This script creates a dataset of actions by capturing screenshots and logging mouse/keyboard interactions. It doesn't require any arguments to run.
-- 
+  
 - **`bot.py`**: The core script that reads the created dataset, processes it, and uses a CNN combined with NLP-based text analysis to determine the best action. This also runs without requiring arguments.
-- 
+  
 
 ## How It Works  
 
@@ -30,23 +32,23 @@ The system uses:
 
 
 - The `generate_dataset.py` script tracks user interactions with the mouse and keyboard.
-- 
+  
 - It takes screenshots of the specified window area each time a specific key (backtick \`) is pressed and logs the corresponding action (mouse click, keyboard press, or scroll) in a `log.txt` file.
-- 
+  
 - These actions are stored along with relative positions and button presses, and are later used for training or as input to determine the best action sequence.
-- 
+  
 
 ### Automated Decision Making:  
 
 
 - The `bot.py` script utilizes both **CNN for optical similarity** and **NLP for fine-grained text analysis**.
-- 
+  
 - Screenshots are processed through a CNN to find visual similarities with previously logged actions.
-- 
+  
 - Text in the images is extracted and compared using NLP techniques to further refine the matching process.
-- 
+  
 - The script determines the most relevant actions and automates their execution.
-- 
+  
 
 ## How to Use
 
