@@ -1,4 +1,4 @@
-Shi, Q. (2024). Automated Task Execution with CNN and NLP. GitHub. [https://github.com/username/repository](https://github.com/aqjshi/small_bot)
+Shi, Q. (2024). Automated Task Execution with CNN and NLP. GitHub. [https://github.com/username/repository](https://github.com/aqjshi/small_bot)]
 
 # Automated Task Execution with CNN and NLP
 
