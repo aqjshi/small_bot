@@ -3,6 +3,7 @@ from pynput.mouse import Listener as MouseListener
 from pynput.keyboard import Listener as KeyboardListener
 from pynput.mouse import Button
 from pynput.keyboard import Key
+import re
 
 # File paths
 mouse_log_file = "log.txt"
@@ -15,6 +16,7 @@ S = Scroll
 KP = Key Press
 KR = Key Release
 SKP = Special Key Press
+// = comment ignore by the parser
 '''
 # Function to log mouse click positions
 def on_click(x, y, button, pressed):
@@ -56,6 +58,50 @@ def start_listeners():
     mouse_listener.join()
     keyboard_listener.join()
 
+def parse_log(log_file):
+    actions = {}
+    current_action = None
+
+    # Define action patterns for matching
+    action_patterns = ['MP', 'MR', 'S', 'KP', 'KR', 'SKP']
+    
+    with open(log_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+
+            # Ignore comments
+            if line.startswith('//'):
+                continue
+
+            # Check for the start of a new action (action_0, action_1, etc.)
+            action_match = re.match(r'action_(\d+)', line)
+            if action_match:
+                action_index = int(action_match.group(1))
+                if action_index not in actions:
+                    actions[action_index] = {
+                        'commands': [],
+                        'screenshot': None
+                    }
+                current_action = action_index
+
+            # If we're inside an action, add commands from the line if they match the patterns
+            if current_action is not None:
+                if any(pattern in line for pattern in action_patterns):
+                    actions[current_action]['commands'].append(line)
+
+            # Check if the line is a screenshot and add it to the current action
+            screenshot_match = re.match(r'// action_(\d+) Screenshot saved as (.+)', line)
+            if screenshot_match:
+                action_index = int(screenshot_match.group(1))
+                screenshot_file = screenshot_match.group(2).strip()
+                if action_index in actions:
+                    actions[action_index]['screenshot'] = screenshot_file
+
+    return actions
+
 if __name__ == "__main__":
     print("Starting logging for mouse clicks, keyboard inputs, and scroll events...")
-    start_listeners()
+    # start_listeners()
+    actions = parse_log("log.txt")
+    #print entire set of actions 
+    print(actions)

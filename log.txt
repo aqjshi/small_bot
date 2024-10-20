@@ -1,0 +1,5 @@
+// Backtick pressed, incrementing action number to 2
+action_2 KR '`'
+action_2 MP 1048.68359375 241.9453125 Button.left
+action_2 MR 1048.68359375 241.9453125 Button.left
+action_2 KP `
