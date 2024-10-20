@@ -1,6 +1,3 @@
-
-Here’s a README file for your project:
-
 Automated Task Execution with CNN and NLP
 Project Overview
 This project leverages Convolutional Neural Networks (CNN) and Natural Language Processing (NLP) to automate decision-making based on visual and text inputs. The purpose of this automation is to capture and analyze user interactions (mouse clicks, scrolls, and keyboard input) on a specified window area, process the visual data and text, and determine the most optimal course of action.
